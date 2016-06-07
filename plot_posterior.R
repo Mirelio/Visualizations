@@ -53,48 +53,25 @@ plot_posterior_distr <- function(limits, param_names, p_values_final){
    pdf('posterior.pdf')
    do.call("grid.arrange", pltList)
    dev.off()
-
 }
-
-plot_stabilityChecker_particles <- function(numb_files, filename, title_text){
-  filelist <- list.files(pattern = "set_result*")
-  data_list = lapply(filelist, read.table, sep = " ")
-  pltList <- list()
-  for(i in 1:length(filelist)){
-    pltList[[i]] <-ggplot(data_list[[i]], aes(x=V1, y=V2)) + geom_point() + xlim(0,25) + ylim(0,25) + theme(axis.title.x = element_blank(),
-                                                                                                            axis.title.y = element_blank())
-    
-  }
-  pdf('phase_space.pdf')
-  do.call("grid.arrange", pltList)
-  dev.off()
-  #g <- do.call("arrangeGrob", c(pltList, list(ncol=sqrt(numb_files) ,sub=textGrob("a",gp = gpar(fontsize=50, fontface="bold", fontsize=50)), left=textGrob("b", rot = 90, vjust = 1,gp = gpar(fontsize=20, fontface="bold", fontsize=20)),main=textGrob(title_text, vjust =1, gp = gpar(fontsize=20, fontface="bold", fontsize=20)))))
-  #ggsave(file=paste(filename,".pdf",sep=''), g,width=12, height=12, dpi=300)
-}
-
+#Set path to data and weights here:
 p_values_final = read.table("results_txt_files/Parameter_values_final.txt")
 p_weights_final = read.table("results_txt_files/Parameter_weights_final.txt")
-p_values_final <- subset(p_values_final, select = -p_values_final[,1] )
-p_values_final$param_weights <- unlist(p_weights_final)
 
+#The first parameter is ignored. If it shouldn't be removed then comment out the following line.
+p_values_final <- subset(p_values_final, select = -p_values_final[,1] )
+
+p_values_final$param_weights <- unlist(p_weights_final)
 doc = xmlInternalTreeParse("input_file.xml")
 top = xmlRoot(doc)
 df <- xmlToDataFrame(top[["parameters"]])
+
+#The first parameter is ignored. If it shouldn't be, remove the -1 in the following three lines.
 lim <- df[-1, 3:4]
 limits <- do.call(cbind, lapply(df[-1, 3:4], as.vector))
 param_nam <- do.call(cbind, lapply(df[-1,1], as.character))
+
 param_names <- c(param_nam,"weights")
 colnames(p_values_final) = c(param_nam,"weights")
 
 plot_posterior_distr(limits, param_names, p_values_final)
-plot_stabilityChecker_particles()
-
-
-
-
-
-
-
-
-
-
